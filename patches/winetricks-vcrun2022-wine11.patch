@@ -1,0 +1,31 @@
+--- winetricks
++++ winetricks
+@@ -13690,10 +13690,12 @@ load_vcrun2022()
+ 
+     w_download https://aka.ms/vs/17/release/vc_redist.x86.exe 0c09f2611660441084ce0df425c51c11e147e6447963c3690f97e0b25c55ed64
+ 
+-    # Setup will refuse to install msvcp140 because the builtin's version number is higher, so manually replace it
++    # Setup will refuse to install msvcp140 & msvcp140_2 because the builtin's version number is higher, so manually replace them
+     # See https://bugs.winehq.org/show_bug.cgi?id=57518
+     w_try_cabextract --directory="${W_TMP}/win32"  "${W_CACHE}"/"${W_PACKAGE}"/vc_redist.x86.exe -F 'a10'
+-    w_try_cabextract --directory="${W_SYSTEM32_DLLS}" "${W_TMP}/win32/a10" -F 'msvcp140.dll'
++    w_try_cabextract --directory="${W_TMP}/win32" "${W_TMP}/win32/a10"
++    w_try mv -f "${W_TMP}/win32/msvcp140.dll_x86" "${W_SYSTEM32_DLLS}/msvcp140.dll"
++    w_try mv -f "${W_TMP}/win32/msvcp140_2.dll_x86" "${W_SYSTEM32_DLLS}/msvcp140_2.dll"
+ 
+     w_try_cd "${W_CACHE}"/"${W_PACKAGE}"
+     w_try_ms_installer "${WINE}" vc_redist.x86.exe ${W_OPT_UNATTENDED:+/q}
+@@ -13716,9 +13718,11 @@ load_vcrun2022()
+ 
+             w_download https://aka.ms/vs/17/release/vc_redist.x64.exe cc0ff0eb1dc3f5188ae6300faef32bf5beeba4bdd6e8e445a9184072096b713b
+ 
+-            # Also replace 64-bit msvcp140.dll
++            # Also replace 64-bit msvcp140.dll & msvcp140_2.dll
+             w_try_cabextract --directory="${W_TMP}/win64"  "${W_CACHE}"/"${W_PACKAGE}"/vc_redist.x64.exe -F 'a12'
+-            w_try_cabextract --directory="${W_SYSTEM64_DLLS}" "${W_TMP}/win64/a12" -F 'msvcp140.dll'
++            w_try_cabextract --directory="${W_TMP}/win64" "${W_TMP}/win64/a12"
++            w_try mv -f "${W_TMP}/win64/msvcp140.dll_amd64" "${W_SYSTEM64_DLLS}/msvcp140.dll"
++            w_try mv -f "${W_TMP}/win64/msvcp140_2.dll_amd64" "${W_SYSTEM64_DLLS}/msvcp140_2.dll"
+ 
+             w_try_ms_installer "${WINE}" vc_redist.x64.exe ${W_OPT_UNATTENDED:+/q}
+             ;;

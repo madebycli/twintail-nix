@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  nix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: DeterminateSystems/determinate-nix-action@61cbfe2efc2d4e7a8a6d56967c3c1058e846c858 # v3.21.9
+      - name: Check and build Flake
+        run: |
+          nix flake metadata --no-write-lock-file . >/dev/null
+          git diff --exit-code -- flake.lock
+          nix flake show --no-write-lock-file
+          nix flake check --no-write-lock-file --print-build-logs
+          nix build .#twintaillauncher --no-write-lock-file --print-build-logs
+      - name: Verify restored runtime fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -x ./result/bin/twintaillauncher
+          native="$(readlink -f ./result/lib/..)"
+          winetricks="$native/lib/twintaillauncher/resources/winetricks"
+          entrypoint="$native/libexec/twintaillauncher-entrypoint"
+          test -x "$winetricks"
+          test -x "$entrypoint"
+          grep -Fq 'msvcp140_2.dll_x86' "$winetricks"
+          grep -Fq 'msvcp140_2.dll_amd64' "$winetricks"
+          grep -Fq 'winetricks.log' "$winetricks"
+          grep -Fq 'SELECT directory FROM install' "$entrypoint"
+          grep -Fq 'jsproxy.dll' "$entrypoint"
+          grep -a -q 'PRESSURE_VESSEL_FILESYSTEMS_RO' "$native/bin/twintaillauncher"
+          grep -a -q 'PROTON_DLL_COPY' "$native/bin/twintaillauncher"

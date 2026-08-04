@@ -16,12 +16,22 @@ concurrency:
 jobs:
   nix:
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
       - uses: DeterminateSystems/determinate-nix-action@61cbfe2efc2d4e7a8a6d56967c3c1058e846c858 # v3.21.9
+      - name: Verify upstream metadata is current
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/update.py
+          python3 scripts/update.py
+          git diff --exit-code -- flake.nix
+          nix flake update twintail_x86_64 --refresh
+          git diff --exit-code -- flake.lock
       - name: Verify lock, check, and build Flake
         run: |
           set -euo pipefail

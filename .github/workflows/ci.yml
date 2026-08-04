@@ -19,10 +19,13 @@ jobs:
     timeout-minutes: 150
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
       - uses: DeterminateSystems/determinate-nix-action@61cbfe2efc2d4e7a8a6d56967c3c1058e846c858 # v3.21.9
-      - name: Check and build Flake
+      - name: Verify lock, check, and build Flake
         run: |
-          nix flake metadata --no-write-lock-file . >/dev/null
+          set -euo pipefail
+          nix flake lock
           git diff --exit-code -- flake.lock
           nix flake show --no-write-lock-file
           nix flake check --no-write-lock-file --print-build-logs

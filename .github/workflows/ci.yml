@@ -27,15 +27,19 @@ jobs:
           nix flake show --no-write-lock-file
           nix flake check --no-write-lock-file --print-build-logs
           nix build .#twintaillauncher --no-write-lock-file --print-build-logs
-      - name: Verify restored runtime fix sources
+      - name: Verify runtime fixes and NixOS defaults
         shell: bash
         run: |
           set -euo pipefail
           test -x ./result/bin/twintaillauncher
-          grep -Fq 'msvcp140_2.dll_x86' patches/winetricks-wine11.patch
-          grep -Fq 'msvcp140_2.dll_amd64' patches/winetricks-wine11.patch
+          grep -Fq 'msvcp140_2.dll_x86' patches/winetricks-vcrun2022-wine11.patch
+          grep -Fq 'msvcp140_2.dll_amd64' patches/winetricks-vcrun2022-wine11.patch
           grep -Fq 'winetricks.log' package.nix
           grep -Fq 'SELECT directory FROM install' package.nix
           grep -Fq 'jsproxy.dll' package.nix
           grep -Fq 'PRESSURE_VESSEL_FILESYSTEMS_RO' package.nix
           grep -Fq 'PROTON_DLL_COPY' package.nix
+          grep -Fq 'hardware.graphics.enable = lib.mkDefault true' flake.nix
+          grep -Fq 'hardware.graphics.enable32Bit = lib.mkDefault true' flake.nix
+          grep -Fq 'programs.gamemode.enable = lib.mkDefault true' flake.nix
+          grep -Fq 'programs.gamescope.enable = lib.mkDefault true' flake.nix

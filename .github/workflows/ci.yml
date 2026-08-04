@@ -32,6 +32,8 @@ jobs:
         run: |
           set -euo pipefail
           test -x ./result/bin/twintaillauncher
+          test -e ./result/usr/share/X11/locale/locale.dir
+          grep -a -Fq 'GTK_IM_MODULE' ./result/bin/twintaillauncher
           grep -Fq 'msvcp140_2.dll_x86' patches/winetricks-vcrun2022-wine11.patch
           grep -Fq 'msvcp140_2.dll_amd64' patches/winetricks-vcrun2022-wine11.patch
           grep -Fq 'winetricks.log' package.nix
@@ -39,6 +41,8 @@ jobs:
           grep -Fq 'jsproxy.dll' package.nix
           grep -Fq 'PRESSURE_VESSEL_FILESYSTEMS_RO' package.nix
           grep -Fq 'PROTON_DLL_COPY' package.nix
+          grep -Fq 'twintaillauncher-xorg-locale' package.nix
+          grep -Fq "export GTK_IM_MODULE='xim'" package.nix
           grep -Fq 'hardware.graphics.enable = lib.mkDefault true' flake.nix
           grep -Fq 'hardware.graphics.enable32Bit = lib.mkDefault true' flake.nix
           grep -Fq 'programs.gamemode.enable = lib.mkDefault true' flake.nix

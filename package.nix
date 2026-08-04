@@ -329,6 +329,13 @@ buildFHSEnv {
       xdg-utils
       xz
       zenity
+
+      # SteamRT and Wine applications still expect the conventional X11 locale
+      # tree under /usr/share, while Nix stores it with libX11.
+      (runCommand "twintaillauncher-xorg-locale" { } ''
+        mkdir -p "$out"
+        ln -s ${libx11}/share "$out/share"
+      '')
     ];
 
   multiPkgs =
@@ -349,7 +356,10 @@ buildFHSEnv {
     ];
 
   profile = ''
+    # Match the Steam runtime's stable controller and input-method behaviour.
     export SDL_JOYSTICK_DISABLE_UDEV=1
+    export GTK_IM_MODULE='xim'
+
     export LIBGL_DRIVERS_PATH=/run/opengl-driver/lib/dri:/run/opengl-driver-32/lib/dri
     export __EGL_VENDOR_LIBRARY_DIRS=/run/opengl-driver/share/glvnd/egl_vendor.d:/run/opengl-driver-32/share/glvnd/egl_vendor.d
     export LIBVA_DRIVERS_PATH=/run/opengl-driver/lib/dri:/run/opengl-driver-32/lib/dri

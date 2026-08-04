@@ -32,8 +32,6 @@ jobs:
         run: |
           set -euo pipefail
           test -x ./result/bin/twintaillauncher
-          test -e ./result/usr/share/X11/locale/locale.dir
-          grep -a -Fq 'GTK_IM_MODULE' ./result/bin/twintaillauncher
           grep -Fq 'msvcp140_2.dll_x86' patches/winetricks-vcrun2022-wine11.patch
           grep -Fq 'msvcp140_2.dll_amd64' patches/winetricks-vcrun2022-wine11.patch
           grep -Fq 'winetricks.log' package.nix

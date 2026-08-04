@@ -1,73 +1,126 @@
-# twintail-nix
+<p align="center">
+  <img src="assets/readme-banner.svg" alt="twintail-nix — TwintailLauncher for Nix and NixOS" width="100%">
+</p>
 
-Native Nix/NixOS packaging for [TwintailLauncher](https://github.com/TwintailTeam/TwintailLauncher). The package uses the official Linux DEB release and supports **x86_64-linux only**. Proton, Wine and Steam Runtime remain managed by TwintailLauncher.
+<p align="center">
+  <a href="https://github.com/madebycli/twintail-nix/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/madebycli/twintail-nix/actions/workflows/ci.yml/badge.svg?branch=main"></a>
+  <img alt="Nix Flake" src="https://img.shields.io/badge/Nix-Flake-5277C3?logo=nixos&logoColor=white">
+  <img alt="Platform" src="https://img.shields.io/badge/platform-x86__64--linux-a77bff">
+</p>
 
-## Restored NixOS runtime fixes
+<p align="center">
+  Native Nix packaging and NixOS integration for
+  <a href="https://github.com/TwintailTeam/TwintailLauncher">TwintailLauncher</a>.
+</p>
 
-The recovered package preserves the required multi-architecture `buildFHSEnv`, writable shared temporary space, closure inclusion and NixOS graphics paths. It provides a real `ldconfig` inside the FHS environment, exposes `/nix/store` read-only to Pressure Vessel and sets `PROTON_DLL_COPY="*"`.
+## Quick start
 
-The packaged Winetricks copy keeps the Wine 11 `vcrun2022` extraction fix for `msvcp140.dll` and `msvcp140_2.dll` on x86 and x64, an immutable Bash shebang, an absolute runtime `PATH`, and persistent diagnostics under the user's cache directory.
+Run directly:
 
-Before and after the native launcher runs, the wrapper reads only registered install directories from Twintail's SQLite database and makes an existing non-writable `jsproxy.dll` user-writable. It does not recursively scan the home directory.
+```bash
+nix run github:madebycli/twintail-nix
+```
 
-## Install
+Install into the current profile:
 
 ```bash
 nix profile add github:madebycli/twintail-nix#twintaillauncher
 twintaillauncher
 ```
 
-Run without installing:
+## What this package provides
 
-```bash
-nix run github:madebycli/twintail-nix#twintaillauncher
-```
+- A native Nix package built from the official TwintailLauncher Linux release
+- Desktop, GTK, networking, audio, graphics, and tray integration
+- A multi-architecture Linux runtime for launcher-managed games and runners
+- Gamescope, GameMode, MangoHud, Vulkan, and OpenGL support
+- A NixOS module with sensible, override-friendly defaults
+- Reproducible source and release pins through `flake.lock`
 
-Upgrade and remove:
-
-```bash
-nix profile upgrade --all --refresh
-nix profile remove twintail-nix
-```
-
-Use `nix profile list` to confirm the exact profile entry name before removal.
+TwintailLauncher continues to manage its own Wine, Proton, and Steam Linux Runtime downloads. Games, runners, user settings, and account data are not included in the Nix package.
 
 ## NixOS module
+
+Add the flake input and import the module:
 
 ```nix
 {
   inputs.twintail-nix.url = "github:madebycli/twintail-nix";
 
   outputs = { nixpkgs, twintail-nix, ... }: {
-    nixosConfigurations.host = nixpkgs.lib.nixosSystem {
+    nixosConfigurations.example = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [
         twintail-nix.nixosModules.default
-        { programs.twintaillauncher.enable = true; }
+        {
+          programs.twintaillauncher.enable = true;
+        }
       ];
     };
   };
 }
 ```
 
-The module enables GameMode and Gamescope by default. They can still be overridden in the system configuration.
+The module installs the launcher and enables the host-side graphics and gaming services required by its downloaded runners. Every default can still be overridden in the system configuration.
 
-## Validate a checkout
+## Use the package directly in NixOS
+
+Users who do not need the module can install the package explicitly:
+
+```nix
+{
+  environment.systemPackages = [
+    inputs.twintail-nix.packages.${pkgs.system}.twintaillauncher
+  ];
+}
+```
+
+## Flake outputs
+
+```text
+packages.x86_64-linux.{default,twintaillauncher}
+apps.x86_64-linux.{default,twintaillauncher}
+checks.x86_64-linux
+nixosModules.default
+overlays.default
+```
+
+## Requirements
+
+- `x86_64-linux`
+- Nix with flakes enabled, or NixOS
+- A graphical Linux session
+- Working native and 32-bit graphics drivers for game runners
+
+The package is designed for Nix and NixOS. It is not a replacement installer for other Linux distributions.
+
+## Update the upstream release
+
+The update helper checks the official TwintailLauncher releases and updates the source declaration without committing or pushing anything:
 
 ```bash
-nix flake show
+python3 scripts/update.py
+nix flake lock
 nix flake check --print-build-logs
 nix build .#twintaillauncher --print-build-logs
 ```
 
-The CI additionally checks the FHS environment, Winetricks patch markers and targeted `jsproxy.dll` repair wrapper.
+Always review the source URL, version, lock-file changes, and full build before publishing an update.
 
-## Updating the upstream release
+## Development
 
-`scripts/update.py` discovers the latest official x86_64 DEB and updates `flake.nix`. It intentionally does not commit or push. Run it manually, regenerate `flake.lock`, review the diff and execute the full checks before publishing an update.
+```bash
+nix flake lock
+git diff --exit-code -- flake.lock
+nix flake show --no-write-lock-file
+nix flake check --no-write-lock-file --print-build-logs
+nix build .#twintaillauncher --no-write-lock-file --print-build-logs
+```
 
-## Data and limitations
+The automated checks validate the package output, launcher wrapper, multi-architecture runtime, NixOS module, and gaming integration.
 
-Twintail user data, downloaded games, runners and Steam Runtime files are not part of the Nix package. A real graphical NixOS session is still required to validate tray integration, downloads, Proton launches, Gamescope and MangoHud end to end. Other Linux distributions should use legitimate upstream installation methods; this repository provides Nix/NixOS integration only.
+## Licensing
 
-See [NOTICE.md](NOTICE.md) for third-party licensing notes.
+TwintailLauncher is developed by the upstream TwintailLauncher project. This repository provides independent Nix packaging and does not redistribute games or user content.
+
+See [`NOTICE.md`](NOTICE.md) for third-party notices and licensing details.

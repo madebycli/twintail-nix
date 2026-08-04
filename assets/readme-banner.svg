@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">twintail-nix</title>
+  <desc id="desc">Two luminous ribbons orbit a launcher icon on a violet night background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0c1028"/>
+      <stop offset="0.52" stop-color="#24124b"/>
+      <stop offset="1" stop-color="#4f175d"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6ee7ff"/>
+      <stop offset="0.48" stop-color="#a77bff"/>
+      <stop offset="1" stop-color="#ff6eb4"/>
+    </linearGradient>
+    <pattern id="stars" width="90" height="90" patternUnits="userSpaceOnUse">
+      <circle cx="12" cy="20" r="1.4" fill="#ffffff" opacity="0.45"/>
+      <circle cx="62" cy="52" r="1" fill="#ffffff" opacity="0.25"/>
+      <circle cx="82" cy="14" r="1.8" fill="#c6a6ff" opacity="0.35"/>
+    </pattern>
+    <filter id="glow"><feGaussianBlur stdDeviation="10"/></filter>
+  </defs>
+  <rect width="1200" height="360" rx="28" fill="url(#bg)"/>
+  <rect width="1200" height="360" rx="28" fill="url(#stars)"/>
+  <g transform="translate(910 180)">
+    <circle r="128" fill="#7c4dff" opacity="0.16" filter="url(#glow)"/>
+    <path d="M-145-72C-45-136 18-78 82-8C130 44 164 36 190 5" fill="none" stroke="#66e0ff" stroke-width="28" stroke-linecap="round" opacity="0.18" filter="url(#glow)"/>
+    <path d="M-145 72C-45 136 18 78 82 8C130-44 164-36 190-5" fill="none" stroke="#ff73ba" stroke-width="28" stroke-linecap="round" opacity="0.18" filter="url(#glow)"/>
+    <path d="M-145-72C-45-136 18-78 82-8C130 44 164 36 190 5" fill="none" stroke="url(#accent)" stroke-width="9" stroke-linecap="round"/>
+    <path d="M-145 72C-45 136 18 78 82 8C130-44 164-36 190-5" fill="none" stroke="url(#accent)" stroke-width="9" stroke-linecap="round"/>
+    <circle r="70" fill="#111735" stroke="url(#accent)" stroke-width="4"/>
+    <path d="M-17-31L39 0L-17 31Z" fill="#ffffff"/>
+    <circle r="91" fill="none" stroke="#ffffff" stroke-opacity="0.16" stroke-width="2" stroke-dasharray="4 10"/>
+  </g>
+  <g font-family="Inter, ui-sans-serif, system-ui, sans-serif">
+    <text x="82" y="137" fill="#ffffff" font-size="66" font-weight="800" letter-spacing="-2">twintail-nix</text>
+    <text x="86" y="187" fill="#c8b9ff" font-size="24" font-weight="700" letter-spacing="2">TWINTAILLAUNCHER FOR NIX &amp; NIXOS</text>
+    <text x="86" y="239" fill="#f1ecff" font-size="22">Native packaging, desktop integration, and a ready-to-use module.</text>
+    <rect x="86" y="274" width="332" height="6" rx="3" fill="url(#accent)"/>
+  </g>
+</svg>

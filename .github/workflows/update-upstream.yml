@@ -1,0 +1,105 @@
+name: Update upstream release
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 03:17 in Berlin during daylight-saving time, 02:17 in winter.
+    - cron: "17 1 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: twintail-upstream-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install Nix
+        uses: DeterminateSystems/determinate-nix-action@61cbfe2efc2d4e7a8a6d56967c3c1058e846c858 # v3.21.9
+
+      - name: Resolve latest release and refresh source
+        id: update
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          old_version="$(sed -n 's/^[[:space:]]*version = "\([^"]*\)";.*/\1/p' flake.nix | head -n1)"
+          test -n "$old_version"
+
+          python3 scripts/update.py
+
+          # Refreshing the release input also detects an upstream artifact that
+          # was replaced without changing its version number.
+          nix flake lock --update-input twintail_x86_64 --refresh
+
+          new_version="$(sed -n 's/^[[:space:]]*version = "\([^"]*\)";.*/\1/p' flake.nix | head -n1)"
+          test -n "$new_version"
+
+          unexpected="$(git diff --name-only | grep -Ev '^(flake\.nix|flake\.lock)$' || true)"
+          if [ -n "$unexpected" ]; then
+            echo "Unexpected files changed:" >&2
+            printf '%s\n' "$unexpected" >&2
+            exit 1
+          fi
+
+          if git diff --quiet -- flake.nix flake.lock; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "TwintailLauncher is current: $new_version"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "version=$new_version" >> "$GITHUB_OUTPUT"
+            echo "TwintailLauncher update detected: $old_version -> $new_version"
+            git --no-pager diff --check
+            git --no-pager diff --stat -- flake.nix flake.lock
+          fi
+
+      - name: Validate updated package
+        if: steps.update.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          nix flake show --no-write-lock-file
+          nix flake check --no-write-lock-file --print-build-logs
+          nix build .#twintaillauncher --no-write-lock-file --print-build-logs
+          test -x ./result/bin/twintaillauncher
+
+      - name: Publish validated update
+        if: steps.update.outputs.changed == 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.update.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Never overwrite work that reached main while this build was running.
+          git fetch --no-tags origin main
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" || {
+            echo "main advanced during validation; leaving publication to the next run" >&2
+            exit 1
+          }
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- flake.nix flake.lock
+          git commit -m "chore(update): TwintailLauncher to ${VERSION}"
+
+          git remote set-url origin \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push origin HEAD:main
+          git remote set-url origin \
+            "https://github.com/${GITHUB_REPOSITORY}.git"

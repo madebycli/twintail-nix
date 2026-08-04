@@ -4,6 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/madebycli/twintail-nix/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/madebycli/twintail-nix/actions/workflows/ci.yml/badge.svg?branch=main"></a>
+  <a href="https://github.com/madebycli/twintail-nix/actions/workflows/update-upstream.yml"><img alt="Upstream update" src="https://github.com/madebycli/twintail-nix/actions/workflows/update-upstream.yml/badge.svg?branch=main"></a>
   <img alt="Nix Flake" src="https://img.shields.io/badge/Nix-Flake-5277C3?logo=nixos&logoColor=white">
   <img alt="Platform" src="https://img.shields.io/badge/platform-x86__64--linux-a77bff">
 </p>
@@ -94,18 +95,31 @@ overlays.default
 
 The package is designed for Nix and NixOS. It is not a replacement installer for other Linux distributions.
 
-## Update the upstream release
+## Automatic upstream updates
 
-The update helper checks the official TwintailLauncher releases and updates the source declaration without committing or pushing anything:
+GitHub Actions checks the official TwintailLauncher release once per day at `01:17 UTC`. That is approximately `03:17` in Berlin during daylight-saving time and `02:17` during winter.
+
+The same workflow can be started safely at any time from **Actions → Update upstream release → Run workflow**. A manual run does not alter the daily schedule, and workflow concurrency prevents two update runs from publishing simultaneously.
+
+When a new or replaced release artifact is detected, the workflow:
+
+1. resolves the official x86_64 DEB;
+2. refreshes the Nix source lock and hash;
+3. runs the complete flake checks;
+4. builds the package;
+5. verifies the installed launcher;
+6. publishes the version and lock-file change only after every validation succeeds.
+
+If the package does not build, `main` is not updated.
+
+The helper remains available for local testing:
 
 ```bash
-python3 scripts/update.py
-nix flake lock
+GITHUB_TOKEN="$(gh auth token)" python3 scripts/update.py
+nix flake lock --update-input twintail_x86_64 --refresh
 nix flake check --print-build-logs
 nix build .#twintaillauncher --print-build-logs
 ```
-
-Always review the source URL, version, lock-file changes, and full build before publishing an update.
 
 ## Development
 

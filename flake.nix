@@ -133,6 +133,12 @@
             environment.systemPackages =
               lib.optionals (hostSystem == system) [ self.packages.${system}.twintaillauncher ];
 
+            # The launcher manages its own Wine/Proton runners and Steam Linux
+            # Runtime. The host still has to expose native and 32-bit graphics
+            # drivers so those downloaded runners can use OpenGL/Vulkan.
+            hardware.graphics.enable = lib.mkDefault true;
+            hardware.graphics.enable32Bit = lib.mkDefault true;
+
             programs.gamemode.enable = lib.mkDefault true;
             programs.gamescope.enable = lib.mkDefault true;
           };

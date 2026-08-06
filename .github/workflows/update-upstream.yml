@@ -3,8 +3,8 @@ name: Update upstream release
 on:
   workflow_dispatch:
   schedule:
-    # GitHub Actions' shortest supported schedule interval is five minutes.
-    - cron: "*/5 * * * *"
+    # 03:17 in Berlin during daylight-saving time, 02:17 in winter.
+    - cron: "17 1 * * *"
 
 permissions:
   contents: write

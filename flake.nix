@@ -5,7 +5,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     twintail_x86_64 = {
-      url = "file+https://github.com/TwintailTeam/TwintailLauncher/releases/download/ttl-v2.4.0/twintaillauncher_2.4.0_amd64.deb";
+      url = "file+https://github.com/TwintailTeam/TwintailLauncher/releases/download/ttl-v2.5.0/twintaillauncher_2.5.0_amd64.deb";
       flake = false;
     };
   };
@@ -18,7 +18,7 @@
       ...
     }:
     let
-      version = "2.4.0";
+      version = "2.5.0";
       system = "x86_64-linux";
       pkgs = import nixpkgs { inherit system; };
       package = pkgs.callPackage ./package.nix {

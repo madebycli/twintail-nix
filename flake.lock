@@ -25,13 +25,13 @@
     "twintail_x86_64": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-TZMQyC0KbyGo3sYPeOyjW0jODF66hT636fb6dJSxwwA=",
+        "narHash": "sha256-gBhzKoqZUmIu75UxUA5qivMc5fIN9D8PyeY5+9OrOu8=",
         "type": "file",
-        "url": "https://github.com/TwintailTeam/TwintailLauncher/releases/download/ttl-v2.5.1/twintaillauncher_2.5.1_amd64.deb"
+        "url": "https://github.com/TwintailTeam/TwintailLauncher/releases/download/ttl-v2.5.2/twintaillauncher_2.5.2_amd64.deb"
       },
       "original": {
         "type": "file",
-        "url": "https://github.com/TwintailTeam/TwintailLauncher/releases/download/ttl-v2.5.1/twintaillauncher_2.5.1_amd64.deb"
+        "url": "https://github.com/TwintailTeam/TwintailLauncher/releases/download/ttl-v2.5.2/twintaillauncher_2.5.2_amd64.deb"
       }
     }
   },
